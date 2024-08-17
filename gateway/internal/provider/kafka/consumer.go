@@ -20,6 +20,7 @@ func NewKafkaConsumer(broker []string, groupID string, topic string) *KafkaConsu
 			GroupID: groupID,
 			Topic: topic,
 			MaxBytes: 10e3, // 10KB
+			StartOffset: kafka.LastOffset,
 		}),
 	}
 }

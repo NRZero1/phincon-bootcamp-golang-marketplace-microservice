@@ -6,6 +6,7 @@ import (
 	"gateway/internal/usecase"
 	"gateway/internal/utils"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -29,41 +30,28 @@ func (h OrderHandler) Order(c *gin.Context) {
 			OrderType: orderRequest.OrderType,
 			OrderService: "gateway",
 			UserID: orderRequest.UserID,
+			Action: "CREATE ORDER",
 			ResponseCode: http.StatusBadRequest,
 			ResponseStatus: http.StatusText(http.StatusBadRequest),
 			ResponseMessage: utils.ErrJsonDecode.Error(),
 			Payload: orderRequest.Payload,
+			ResponseCreatedAt: time.Now().Format("02-Jan-2006 15:04:05"),
 		}
 
 		utils.NewOrderResponse(orderResponse).WriteOrder(c.Writer)
 		return
 	}
 
-	errSave := h.usecase.SaveTransaction(orderRequest)
+	response, errSave := h.usecase.SaveTransaction(orderRequest)
 
 	if errSave != nil {
-		orderResponse := domain.OrderResponse {
-			OrderType: orderRequest.OrderType,
-			OrderService: "gateway",
-			UserID: orderRequest.UserID,
-			ResponseCode: http.StatusInternalServerError,
-			ResponseStatus: http.StatusText(http.StatusInternalServerError),
-			ResponseMessage: errSave.Error(),
-			Payload: orderRequest.Payload,
-		}
-		utils.NewOrderResponse(orderResponse).WriteOrder(c.Writer)
+		utils.NewOrderResponse(response).WriteOrder(c.Writer)
 		return
 	}
 
-	orderResponse := domain.OrderResponse {
-		OrderType: orderRequest.OrderType,
-		OrderService: "gateway",
-		UserID: orderRequest.UserID,
-		ResponseCode: http.StatusCreated,
-		ResponseStatus: http.StatusText(http.StatusCreated),
-		ResponseMessage: "CREATED",
-		Payload: orderRequest.Payload,
-	}
+	utils.NewOrderResponse(response).WriteOrder(c.Writer)
+}
 
-	utils.NewOrderResponse(orderResponse).WriteOrder(c.Writer)
+func FindByTransactionID(context *gin.Context) {
+
 }

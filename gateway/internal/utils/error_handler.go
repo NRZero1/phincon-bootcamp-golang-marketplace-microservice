@@ -16,4 +16,7 @@ var (
 	ErrJsonDecode = errors.New("error when trying to decode json")
 	ErrKafkaConsume = errors.New("error when trying to read message")
 	ErrKafkaReaderClose = errors.New("error when trying to close kafka consumer")
+	ErrKafkaProducer = errors.New("failed to produce order message")
+	ErrMarshal = errors.New("failed to encode")
+	ErrAssertType = errors.New("failed to assert type")
 )

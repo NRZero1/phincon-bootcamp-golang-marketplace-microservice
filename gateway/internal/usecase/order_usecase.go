@@ -16,7 +16,7 @@ type OrderGetLastTransactionID interface {
 }
 
 type OrderSaveTransaction interface {
-	SaveTransaction(orderRequest domain.OrderRequest) error
+	SaveTransaction(orderRequest domain.OrderRequest) (domain.OrderResponse, error)
 }
 
 type OrderSaveTransactionDetails interface {

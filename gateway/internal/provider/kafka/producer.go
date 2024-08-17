@@ -2,9 +2,12 @@ package kafka
 
 import (
 	"context"
-	"log"
+	"encoding/json"
+	"fmt"
+	"gateway/internal/utils"
 	"time"
 
+	"github.com/rs/zerolog/log"
 	"github.com/segmentio/kafka-go"
 )
 
@@ -16,18 +19,21 @@ type KafkaProducer struct {
 func NewKafkaProducer(brokers []string, topic string, partitions int, replicationFactor int) (*KafkaProducer, error) {
     conn, err := kafka.Dial("tcp", brokers[0])
     if err != nil {
-        return nil, err
+		log.Error().Msg(fmt.Sprintf("Error when trying to create connection to kafka with message: %s", err.Error()))
+        return nil, utils.ErrKafkaProducer
     }
 
     topicExists, err := checkTopicExists(conn, topic)
     if err != nil {
-        return nil, err
+		log.Error().Msg(fmt.Sprintf("Error when trying to check if topic is exist with message: %s", err.Error()))
+        return nil, utils.ErrKafkaProducer
     }
 
     if !topicExists {
         err = createTopic(conn, topic, partitions, replicationFactor)
         if err != nil {
-            return nil, err
+			log.Error().Msg(fmt.Sprintf("Error when trying to create topic with message: %s", err.Error()))
+            return nil, utils.ErrKafkaProducer
         }
     }
 
@@ -69,23 +75,31 @@ func createTopic(conn *kafka.Conn, topic string, partitions int, replicationFact
     return nil
 }
 
-func (kp *KafkaProducer) ProduceMessage(key, value string) error {
+func (kp *KafkaProducer) ProduceMessage(key string, value any) error {
+	valueByte, err := json.MarshalIndent(value, "", "	")
+
+	if err != nil {
+		log.Error().Msg(fmt.Sprintf("Failed to marshall value with message: %s", err.Error()))
+		return utils.ErrMarshal
+	}
+
     msg := kafka.Message{
         Key:   []byte(key),
-        Value: []byte(value),
+        Value: valueByte,
     }
 
     ctx := context.Background()
     ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
     defer cancel()
 
-    err := kp.Writer.WriteMessages(ctx, msg)
-    if err != nil {
+    errWrite := kp.Writer.WriteMessages(ctx, msg)
+
+    if errWrite != nil {
         log.Printf("Failed to write message to Kafka: %v", err)
         return err
     }
 
-    log.Printf("Produced message to Kafka: key=%s, value=%s", key, value)
+    log.Info().Msg(fmt.Sprintf("Produced message to Kafka: key=%s, value=%+v", key, value))
     return nil
 }
 

@@ -20,6 +20,7 @@ func NewKafkaConsumer(broker []string, groupID string, topic string) *KafkaConsu
 			GroupID: groupID,
 			Topic: topic,
 			MaxBytes: 10e3, // 10KB
+			StartOffset: kafka.LastOffset,
 		}),
 	}
 }
@@ -29,16 +30,17 @@ func (c *KafkaConsumer) ConsumeMessage() error {
 		message, err := c.ReadMessage(context.Background())
 
 		if err != nil {
-			log.Error().Msg(fmt.Sprintf("%s", utils.NewErrKafkaConsume(err.Error())))
-			return err
+			log.Error().Msg(fmt.Sprintf("Error when trying to read message with message: %s", err.Error()))
+			return utils.ErrKafkaConsume
 		}
 
 		log.Info().Msg(fmt.Sprintf("message at offset %d: %s = %s\n", message.Offset, string(message.Key), string(message.Value)))
+
 	}
 }
 
 func (c *KafkaConsumer) Close() {
 	if err := c.Reader.Close(); err != nil {
-		log.Error().Msg(fmt.Sprintf("%s", utils.NewErrKafkaReaderClose(err.Error())))
+		log.Error().Msg(fmt.Sprintf("Error hwne trying to close kafka consumer with message: %s", err.Error()))
 	}
 }

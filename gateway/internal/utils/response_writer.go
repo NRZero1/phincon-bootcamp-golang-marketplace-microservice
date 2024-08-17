@@ -24,7 +24,6 @@ func NewOrderResponse(orderResponse domain.OrderResponse) *ResponseOrder {
 			OrderService: orderResponse.OrderService,
 			TransactionID: orderResponse.TransactionID,
 			UserID: orderResponse.UserID,
-			ChannelID: orderResponse.ChannelID,
 			ResponseCode: orderResponse.ResponseCode,
 			ResponseStatus: orderResponse.ResponseStatus,
 			ResponseMessage: orderResponse.ResponseMessage,
@@ -46,7 +45,6 @@ func (r ResponseOrder) WriteOrder(w http.ResponseWriter) {
 				OrderService: r.OrderService,
 				TransactionID: r.TransactionID,
 				UserID: r.UserID,
-				ChannelID: r.ChannelID,
 				ResponseCode: http.StatusInternalServerError,
 				ResponseStatus: http.StatusText(http.StatusInternalServerError),
 				ResponseMessage: fmt.Sprintf("Error when trying to marshal response with error: %s", err.Error()),
@@ -73,7 +71,7 @@ func NewResponse(message string, statusCode int, data interface{}) *Response {
 func (r Response) Write(w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(r.GlobalResponse.StatusCode)
-	
+
 	res, err := json.MarshalIndent(&r.GlobalResponse, "", "	")
 
 	if err != nil {

@@ -29,7 +29,7 @@ func (repo *OrderRepository) SaveTransaction(ctx context.Context, transaction do
 		return utils.ErrRepoCreateTrx
 	}
 
-	query := "INSERT INTO transaction (transaction_id, order_type, status, user_id) VALUES ($1, $2, $3, $4)"
+	query := "INSERT INTO transaction (transaction_id, order_type, user_id, status) VALUES ($1, $2, $3, $4)"
 
 	stmt, err := trx.PrepareContext(ctx, query)
 
@@ -40,7 +40,7 @@ func (repo *OrderRepository) SaveTransaction(ctx context.Context, transaction do
 
 	defer stmt.Close()
 
-	_, errExec := stmt.ExecContext(ctx, transaction.TransactionID, transaction.OrderType, "CREATED", transaction.UserID)
+	_, errExec := stmt.ExecContext(ctx, transaction.TransactionID, transaction.OrderType, transaction.UserID, "CREATED")
 
 	if errExec != nil {
 		trx.Rollback()
@@ -63,7 +63,7 @@ func (repo *OrderRepository) GetLastTransactionID(ctx context.Context) (string, 
 		log.Error().Msg(fmt.Sprintf("Error when trying to create trx in repo with message: %s", err.Error()))
 		return "", utils.ErrRepoCreateTrx
 	}
-	
+
 	query := `
 		WITH latest_transaction AS (
 			SELECT transaction_id
@@ -88,7 +88,7 @@ func (repo *OrderRepository) GetLastTransactionID(ctx context.Context) (string, 
 	var transactionID string
 
 	errScan := stmt.QueryRowContext(ctx).Scan(&transactionID)
-	
+
 	if errScan != nil {
 		log.Error().Msg(fmt.Sprintf("Error when trying to scan query result in repo with message: %s", errScan.Error()))
 		if errScan == sql.ErrNoRows {
@@ -100,8 +100,6 @@ func (repo *OrderRepository) GetLastTransactionID(ctx context.Context) (string, 
 	return transactionID, nil
 }
 
-// func (repo *OrderRepository) FindByTransactionID(transactionID string) 
-
 func (repo *OrderRepository) SaveTransactionDetails(ctx context.Context, transactionDetail domain.TransactionDetail) error {
 	trx, err := repo.db.BeginTx(ctx, nil)
 
@@ -112,14 +110,17 @@ func (repo *OrderRepository) SaveTransactionDetails(ctx context.Context, transac
 
 	query := `
 	INSERT INTO
-		transaction
+		transaction_detail
 		(
 			transaction_id,
 			order_type,
+			user_id,
 			topic,
-			step,
+			action,
 			service,
 			status,
+			status_code,
+			status_desc,
 			message,
 			payload
 		)
@@ -132,7 +133,10 @@ func (repo *OrderRepository) SaveTransactionDetails(ctx context.Context, transac
 			$5,
 			$6,
 			$7,
-			$8
+			$8,
+			$9,
+			$10,
+			$11
 		)
 	`
 
@@ -142,17 +146,20 @@ func (repo *OrderRepository) SaveTransactionDetails(ctx context.Context, transac
 		log.Error().Msg(fmt.Sprintf("Error when trying to create prepared statement in repo with message: %s", err.Error()))
 		return utils.ErrPreparedStmt
 	}
-	
+
 	defer stmt.Close()
 
 	_, errExec := stmt.ExecContext(
 		ctx,
 		transactionDetail.TransactionID,
 		transactionDetail.OrderType,
+		transactionDetail.UserID,
 		transactionDetail.Topic,
-		transactionDetail.Step,
+		transactionDetail.Action,
 		transactionDetail.Service,
 		transactionDetail.Status,
+		transactionDetail.StatusCode,
+		transactionDetail.StatusDesc,
 		transactionDetail.Message,
 		transactionDetail.Payload,
 	)
@@ -184,8 +191,10 @@ func (repo *OrderRepository) FindByTransactionID(ctx context.Context, transactio
 			id,
 			transaction_id,
 			order_type,
+			user_id,
 			status,
-			user_id
+			created_at,
+			updated_at
 		FROM
 			transaction
 		WHERE
@@ -198,7 +207,7 @@ func (repo *OrderRepository) FindByTransactionID(ctx context.Context, transactio
 		log.Error().Msg(fmt.Sprintf("Error when trying to create prepared statement in repo with message: %s", err.Error()))
 		return domain.Transaction{}, utils.ErrPreparedStmt
 	}
-	
+
 	defer stmt.Close()
 
 	var transaction domain.Transaction
@@ -207,10 +216,12 @@ func (repo *OrderRepository) FindByTransactionID(ctx context.Context, transactio
 			&transaction.ID,
 			&transaction.TransactionID,
 			&transaction.OrderType,
-			&transaction.Status,
 			&transaction.UserID,
+			&transaction.Status,
+			&transaction.CreatedAt,
+			&transaction.UpdatedAt,
 		)
-		
+
 	if errScan != nil {
 		log.Error().Msg(fmt.Sprintf("Error when trying to scan query result in repo with message: %s", errScan.Error()))
 		if errScan == sql.ErrNoRows {
