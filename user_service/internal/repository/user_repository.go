@@ -9,10 +9,10 @@ type UserRepositoryInterface interface {
 	UserSave
 	UserFindById
 	UserGetAll
-	UserBalanceReduce
-	UserFindByUsernameLogin
+	// UserBalanceReduce
+	// UserFindByUsernameLogin
 	UserFindByUsername
-	UserSetPackage
+	// UserSetPackage
 }
 
 type UserSave interface {

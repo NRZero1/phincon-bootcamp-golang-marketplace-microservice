@@ -6,5 +6,4 @@ type Channel struct {
 	ChannelName     string  `json:"channel_name" binding:"required"`
 	Membership      []int   `json:"membership"`
 	MembershipPrice float64 `json:"membership_price" binding:"required" validate:"gt=0"`
-	VideoIDs        []int   `json:"video_ids"`
 }

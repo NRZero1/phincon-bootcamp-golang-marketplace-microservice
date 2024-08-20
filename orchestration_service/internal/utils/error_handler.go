@@ -18,4 +18,8 @@ var (
 	ErrKafkaReaderClose = errors.New("error when trying to close kafka consumer")
 	ErrKafkaProducer = errors.New("failed to produce order message")
 	ErrMarshal = errors.New("failed to encode")
+	ErrMaxRetry = errors.New("request returned an error and system tried to retry but max retry reached")
+	ErrPathVar = errors.New("error when converting string to int for path variable")
+	ErrValidation = errors.New("user input didn't pass the validation")
+	ErrInvalidPayloadFormat = errors.New("Payload is not in a valid JSON format")
 )

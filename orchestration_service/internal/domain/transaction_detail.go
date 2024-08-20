@@ -6,7 +6,7 @@ type TransactionDetail struct {
 	ID            int         `json:"id" binding:"required"`
 	TransactionID string      `json:"transaction_id" binding:"required"`
 	OrderType     string      `json:"order_type" binding:"required"`
-	UserID        int         `json:"user_id" binding:"required"`
+	UserID        int         `json:"user_id" binding:"required" validate:"number,gt=0"`
 	Topic         string      `json:"topic" binding:"required"`
 	Action        string      `json:"step" binding:"required"`
 	Service       string      `json:"service" binding:"required"`

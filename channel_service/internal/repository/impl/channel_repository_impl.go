@@ -34,7 +34,6 @@ func (repo *ChannelRepository) initData() {
 		UserID:           1,
 		ChannelName:      "Test Channel 1",
 		MembershipPrice:  10000,
-		VideoIDs: []int{1, 2},
 	}
 
 	repo.channels[2] = domain.Channel{
@@ -42,7 +41,6 @@ func (repo *ChannelRepository) initData() {
 		UserID:           2,
 		ChannelName:      "Test Channel 2",
 		MembershipPrice:  10000,
-		VideoIDs: []int{3, 4},
 	}
 }
 
@@ -68,6 +66,7 @@ func (repo *ChannelRepository) FindById(id int) (domain.Channel, error) {
 	log.Trace().Msg("Attempting to fetch channel")
 	if foundChannel, exists := repo.channels[id]; exists {
 		log.Trace().Msg("Fetching completed")
+		log.Debug().Msgf("Found Channel Value: %+v", foundChannel)
 		return foundChannel, nil
 	}
 	log.Error().Msg(fmt.Sprintf("Channel with ID %d not found", id))
@@ -89,7 +88,6 @@ func (repo *ChannelRepository) GetAll() []domain.Channel {
 			MembershipPrice: v.MembershipPrice,
 			UserID: v.UserID,
 			Membership: v.Membership,
-			VideoIDs: v.VideoIDs,
 		}
 		listOfChannels = append(listOfChannels, temp)
 	}
@@ -111,7 +109,6 @@ func (repo *ChannelRepository) FindByName(name string) (domain.Channel, error) {
 				MembershipPrice: v.MembershipPrice,
 				UserID: v.UserID,
 				Membership: v.Membership,
-				VideoIDs: v.VideoIDs,
 			}
 			return temp, nil
 		}

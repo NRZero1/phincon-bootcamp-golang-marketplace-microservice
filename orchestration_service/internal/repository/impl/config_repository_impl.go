@@ -22,6 +22,8 @@ func NewConfigRepository(database *sql.DB) repository.ConfigRepositoryInterface 
 }
 
 func (repo ConfigRepository) GetConfigByOrderType(ctx context.Context, orderType string, serviceSource string, statusCategory string) (domain.ConfigResponse, error) {
+	log.Trace().Msg("Inside config repo")
+	log.Trace().Msg("begin trx")
 	trx, err := repo.db.BeginTx(ctx, nil)
 
 	if err != nil {
@@ -29,6 +31,7 @@ func (repo ConfigRepository) GetConfigByOrderType(ctx context.Context, orderType
 		return domain.ConfigResponse{}, utils.ErrRepoCreateTrx
 	}
 
+	log.Trace().Msg("Set query")
 	query := `
 		SELECT
 			order_type,
@@ -46,6 +49,7 @@ func (repo ConfigRepository) GetConfigByOrderType(ctx context.Context, orderType
 			status_category=$3
 	`
 
+	log.Trace().Msg("Tryig to create prepared statement")
 	stmt, err := trx.PrepareContext(ctx, query)
 
 	if err != nil {
@@ -57,7 +61,9 @@ func (repo ConfigRepository) GetConfigByOrderType(ctx context.Context, orderType
 
 	var configResponse domain.ConfigResponse
 
-	errScan := stmt.QueryRowContext(ctx, orderType).Scan(&configResponse.OrderType, &configResponse.ServiceSource, &configResponse.ServiceDest, &configResponse.Action, &configResponse.StatusCategory)
+	log.Trace().Msg("Trying to execute query row context")
+	log.Debug().Str("Order Type: ", orderType).Str("Service Source: ", serviceSource).Str("Status Category: ", statusCategory).Msg("debug")
+	errScan := stmt.QueryRowContext(ctx, orderType, serviceSource, statusCategory).Scan(&configResponse.OrderType, &configResponse.ServiceSource, &configResponse.ServiceDest, &configResponse.Action, &configResponse.StatusCategory)
 
 	if errScan != nil {
 		log.Error().Msg(fmt.Sprintf("Error when trying to scan config steps with error message: %s", errScan.Error()))

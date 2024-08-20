@@ -6,12 +6,24 @@ import (
 )
 
 type TransactionRepositoryInterface interface {
+	TransactionUpdate
+	TransactionDetailInput
+	TransactionDetailFindByIDStatusFailed
+	TransactionDetailRetry
 }
 
 type TransactionUpdate interface {
-	TransactionUpdate(context context.Context, transaction domain.Transaction) (error)
+	TransactionUpdate(context context.Context, status string, transactionID string) (error)
 }
 
-type TransactionDetailUpdate interface {
-	TransactionDetailUpdate(context context.Context, transactionDetail domain.TransactionDetail) (error)
+type TransactionDetailInput interface {
+	TransactionDetailInput(context context.Context, transactionMessage domain.TransactionMessage, payload interface{}) (error)
+}
+
+type TransactionDetailFindByIDStatusFailed interface {
+	FindTransactionDetailByIDStatusFailed(context context.Context, transactionID string) (domain.TransactionDetail, error)
+}
+
+type TransactionDetailRetry interface {
+	TransactionDetailRetry(context context.Context, id int, transactionDetail domain.TransactionDetail) (domain.TransactionDetail, error)
 }

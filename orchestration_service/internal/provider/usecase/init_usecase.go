@@ -8,8 +8,12 @@ import (
 
 var (
 	ConsumerUseCase usecase.ConsumerUseCaseInterface
+	ConfigUseCase usecase.ConfigUseCaseInterface
+	TransactionUseCase usecase.TransactionUseCaseInterface
 )
 
 func InitUseCase() {
-	ConsumerUseCase = useCaseImpl.NewConsumerUseCase(providerRepo.ConfigRepository)
+	ConfigUseCase = useCaseImpl.NewConfigUseCase(providerRepo.ConfigRepository)
+	TransactionUseCase = useCaseImpl.NewTransactionUseCase(providerRepo.TransactionRepository)
+	ConsumerUseCase = useCaseImpl.NewConsumerUseCase(ConfigUseCase, TransactionUseCase)
 }

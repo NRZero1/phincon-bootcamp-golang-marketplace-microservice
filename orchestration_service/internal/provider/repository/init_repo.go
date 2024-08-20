@@ -8,8 +8,10 @@ import (
 
 var (
 	ConfigRepository repository.ConfigRepositoryInterface
+	TransactionRepository repository.TransactionRepositoryInterface
 )
 
 func InitRepository(database *sql.DB) {
 	ConfigRepository = repoImplement.NewConfigRepository(database)
+	TransactionRepository = repoImplement.NewTransactionRepository(database)
 }

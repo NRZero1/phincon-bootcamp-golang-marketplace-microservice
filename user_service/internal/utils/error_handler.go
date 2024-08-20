@@ -6,7 +6,7 @@ import (
 )
 
 var (
-	ErrFindUserById error
+	ErrFindUser = errors.New("user not found")
 	ErrFindUserByUsername error
 	ErrHash = errors.New("error hashing password")
 	ErrDecode = errors.New("error decoding JSON")
@@ -16,11 +16,6 @@ var (
 	ErrWrongPass = errors.New("wrong password")
 	ErrCreateSignature = errors.New("error creating signature")
 )
-
-func NewErrFindUserById(id int) (error) {
-	ErrFindUserById = fmt.Errorf("no user found with ID %d", id)
-	return ErrFindUserById
-}
 
 func NewErrFindByUsername(username string) (error) {
 	ErrFindUserByUsername = fmt.Errorf("no user found with username %s", username)

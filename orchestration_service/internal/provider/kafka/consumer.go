@@ -3,6 +3,7 @@ package kafka
 import (
 	"context"
 	"fmt"
+	"orchestration_service/internal/usecase"
 	"orchestration_service/internal/utils"
 
 	"github.com/rs/zerolog/log"
@@ -11,9 +12,10 @@ import (
 
 type KafkaConsumer struct {
 	*kafka.Reader
+	consumerUseCase usecase.ConsumerUseCaseInterface
 }
 
-func NewKafkaConsumer(broker []string, groupID string, topic string) *KafkaConsumer {
+func NewKafkaConsumer(broker []string, groupID string, topic string, consumerUseCase usecase.ConsumerUseCaseInterface) *KafkaConsumer {
 	return &KafkaConsumer{
 		Reader: kafka.NewReader(kafka.ReaderConfig{
 			Brokers: broker,
@@ -22,22 +24,30 @@ func NewKafkaConsumer(broker []string, groupID string, topic string) *KafkaConsu
 			MaxBytes: 10e3, // 10KB
 			StartOffset: kafka.LastOffset,
 		}),
+		consumerUseCase: consumerUseCase,
 	}
 }
 
-func (c *KafkaConsumer) ConsumeMessage() error {
+func (c *KafkaConsumer) ConsumeMessage(ctx context.Context) error {
 	for {
-		message, err := c.ReadMessage(context.Background())
+		select {
+		case <-ctx.Done():
+			log.Info().Msg("Kafka consumer shutting down...")
+			return nil
+		default:
+			message, err := c.ReadMessage(ctx)
 
-		if err != nil {
-			log.Error().Msg(fmt.Sprintf("Error when trying to read message with message: %s", err.Error()))
-			return utils.ErrKafkaConsume
+			if err != nil {
+				log.Error().Msg(fmt.Sprintf("Error when trying to read message: %s", err.Error()))
+				return utils.ErrKafkaConsume
+			}
+
+			log.Info().Msg(fmt.Sprintf("Message at offset %d: %s = %s\n", message.Offset, string(message.Key), string(message.Value)))
+			c.consumerUseCase.RouteMessage(message.Value)
 		}
-
-		log.Info().Msg(fmt.Sprintf("message at offset %d: %s = %s\n", message.Offset, string(message.Key), string(message.Value)))
-
 	}
 }
+
 
 func (c *KafkaConsumer) Close() {
 	if err := c.Reader.Close(); err != nil {

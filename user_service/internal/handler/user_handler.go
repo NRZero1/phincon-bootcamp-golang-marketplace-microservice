@@ -6,7 +6,7 @@ type UserHandlerInterface interface {
 	UserSave
 	UserFindById
 	UserGetAll
-	UserLogin
+	// UserLogin
 	UserFindByUsername
 	UserGetAllOrFindByUsername
 }
