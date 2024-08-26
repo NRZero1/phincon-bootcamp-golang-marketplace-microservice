@@ -223,6 +223,11 @@ func (uc ConsumerUseCase) RouteMessage(message []byte) {
 		return
 	}
 
+	if transactionMessage.Action == "START" && transactionMessage.Status == "ONPROGRESS" {
+		log.Trace().Msg("Trying to update transaction detail status from ONPROGRESS to SUCCESS")
+		uc.transactionUseCase.UpdateStatus("SUCCESS", transactionMessage.TransactionID)
+	}
+
 	log.Trace().Msg("Trying to call config use case to fetch config")
 	configResponse, err := uc.configUseCase.GetConfigByOrderType(transactionMessage.OrderType, transactionMessage.Service, statusCategory)
 

@@ -10,6 +10,7 @@ type TransactionRepositoryInterface interface {
 	TransactionDetailInput
 	TransactionDetailFindByIDStatusFailed
 	TransactionDetailRetry
+	TransactionDetailUpdateStatus
 }
 
 type TransactionUpdate interface {
@@ -26,4 +27,8 @@ type TransactionDetailFindByIDStatusFailed interface {
 
 type TransactionDetailRetry interface {
 	TransactionDetailRetry(context context.Context, id int, transactionDetail domain.TransactionDetail) (domain.TransactionDetail, error)
+}
+
+type TransactionDetailUpdateStatus interface {
+	UpdateStatus(context context.Context, status string, transactionID string) error
 }

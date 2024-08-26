@@ -22,7 +22,7 @@ func NewChannelRequestUseCase() usecase.ChannelRequestUseCaseInterface {
 func (uc ChannelRequestUseCase) GetChannelByID(id int) (bool, int, response.Channel, error) {
 	log.Trace().Msg("Inside channel request use case")
 	counter := 1
-	retryAfter := 5
+	retryAfter := 3
 	var globalResponse response.GlobalResponse
 	for {
 		log.Trace().Msg("Inside infinite loop to retry request")

@@ -161,3 +161,13 @@ func (uc TransactionUseCase) TransactionDetailSend(transactionDetail domain.Tran
 		}
 	}
 }
+
+func (uc TransactionUseCase) UpdateStatus(status string, transactionID string) error {
+	log.Trace().Msg("Inside transaction usecase transaction UpdateStatus")
+	ctx, cancel := context.WithTimeout(context.Background(), 10 * time.Second)
+	defer cancel()
+
+	log.Trace().Msg("AAAAAAAAAAAAAAAAAAAAAAAAAAA")
+	return uc.repo.UpdateStatus(ctx, status, transactionID)
+}
+

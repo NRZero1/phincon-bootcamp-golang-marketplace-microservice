@@ -336,3 +336,50 @@ func (repo TransactionRepository) TransactionDetailRetry(ctx context.Context, id
 	return updatedTransactionDetail, nil
 }
 
+func (repo TransactionRepository) UpdateStatus(ctx context.Context, status string, transactionID string) error {
+	log.Trace().Msg("AAAAAAAAAAAAAAAAAAAAAAAAAAA")
+	log.Trace().Msg("Begin trx")
+	trx, err := repo.db.BeginTx(ctx, nil)
+
+	if err != nil {
+		log.Error().Msg(fmt.Sprintf("Error when trying to create trx in repo with message: %s", err.Error()))
+		return utils.ErrRepoCreateTrx
+	}
+
+	log.Trace().Msg("Set up query")
+	query := `
+		UPDATE
+			transaction_detail
+		SET
+			status=$1
+		WHERE
+			transaction_id=$2
+	`
+
+	log.Trace().Msg("Trying to create prepared statement")
+	stmt, err := trx.PrepareContext(ctx, query)
+
+	if err != nil {
+		log.Error().Msg(fmt.Sprintf("Error when trying to create prepared statement in repo with message: %s", err.Error()))
+		return utils.ErrPreparedStmt
+	}
+
+	defer stmt.Close()
+
+	log.Debug().Msgf("TransactionID: %s", transactionID)
+	log.Debug().Msgf("Status: %s", status)
+	_, errExec := stmt.ExecContext(ctx, status, transactionID)
+
+	if errExec != nil {
+		trx.Rollback()
+		log.Error().Msg(fmt.Sprintf("Error when trying to exec statement in repo with message: %s", errExec.Error()))
+		return utils.ErrDbExec
+	}
+
+	if err = trx.Commit(); err != nil {
+		log.Error().Msg(fmt.Sprintf("Error when trying to commit trx in repo with message: %s", err.Error()))
+		return utils.ErrTrxCommit
+	}
+
+	return nil
+}

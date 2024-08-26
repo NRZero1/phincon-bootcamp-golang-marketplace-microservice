@@ -10,6 +10,7 @@ type TransactionUseCaseInterface interface {
 	TransactionDetailFindByIDStatusFailed
 	TransactionDetailRetry
 	TransactionDetailSend
+	TransactionDetailUpdateStatus
 }
 
 type TransactionUpdate interface {
@@ -30,3 +31,8 @@ type TransactionDetailRetry interface {
 type TransactionDetailSend interface {
 	TransactionDetailSend(transactionDetail domain.TransactionDetail)
 }
+
+type TransactionDetailUpdateStatus interface {
+	UpdateStatus(status string, transactionID string) error
+}
+

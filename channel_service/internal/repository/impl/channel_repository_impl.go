@@ -45,8 +45,6 @@ func (repo *ChannelRepository) initData() {
 }
 
 func (repo *ChannelRepository) Save(channel *domain.Channel) (domain.Channel, error) {
-	repo.mtx.Lock()
-	defer repo.mtx.Unlock()
 
 	log.Trace().Msg("Inside channel repository save")
 	log.Trace().Msg("Attempting to save new channel")
@@ -59,8 +57,6 @@ func (repo *ChannelRepository) Save(channel *domain.Channel) (domain.Channel, er
 }
 
 func (repo *ChannelRepository) FindById(id int) (domain.Channel, error) {
-	repo.mtx.Lock()
-	defer repo.mtx.Unlock()
 
 	log.Trace().Msg("Inside channel repository find by id")
 	log.Trace().Msg("Attempting to fetch channel")
@@ -74,8 +70,6 @@ func (repo *ChannelRepository) FindById(id int) (domain.Channel, error) {
 }
 
 func (repo *ChannelRepository) GetAll() []domain.Channel {
-	repo.mtx.Lock()
-	defer repo.mtx.Unlock()
 
 	log.Trace().Msg("Inside channel repository get all")
 	log.Trace().Msg("Attempting to fetch channels")
@@ -97,8 +91,6 @@ func (repo *ChannelRepository) GetAll() []domain.Channel {
 }
 
 func (repo *ChannelRepository) FindByName(name string) (domain.Channel, error) {
-	repo.mtx.Lock()
-	defer repo.mtx.Unlock()
 
 	log.Trace().Msg("Inside channel repository find by name")
 	for _, v := range repo.channels {
@@ -117,8 +109,6 @@ func (repo *ChannelRepository) FindByName(name string) (domain.Channel, error) {
 }
 
 func (repo *ChannelRepository) AddMembership(channelID int, userID int) (domain.Channel, error) {
-	repo.mtx.Lock()
-	defer repo.mtx.Unlock()
 
 	if foundChannel, exists := repo.channels[channelID]; exists {
 		log.Trace().Msg("Fetching completed")
