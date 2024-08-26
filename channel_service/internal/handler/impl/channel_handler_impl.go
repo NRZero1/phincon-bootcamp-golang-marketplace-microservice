@@ -23,7 +23,7 @@ func NewChannelHandler(usecase usecase.ChannelUseCaseInterface) handler.ChannelH
 }
 
 func (h ChannelHandler) FindById(c *gin.Context) {
-	log.Trace().Msg("Entering courier handler find by id")
+	log.Trace().Msg("Entering balance handler find by id")
 
 	idString := c.Param("id")
 	log.Debug().Str("Received Id is: ", idString)
@@ -81,7 +81,7 @@ func (h ChannelHandler) FindById(c *gin.Context) {
 }
 
 func (h ChannelHandler) GetAll(c *gin.Context) {
-	log.Trace().Msg("Entering courier get all handler")
+	log.Trace().Msg("Entering balance get all handler")
 
 	allChannels := h.usecase.GetAll()
 
@@ -98,7 +98,7 @@ func (h ChannelHandler) GetAll(c *gin.Context) {
 }
 
 func (h ChannelHandler) FindByName(c *gin.Context) {
-	log.Trace().Msg("Entering courier handler find by name")
+	log.Trace().Msg("Entering balance handler find by name")
 
 	name := c.Query("name")
 	log.Debug().Str("Received name is: ", name)

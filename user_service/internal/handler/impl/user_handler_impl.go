@@ -37,16 +37,7 @@ func (h UserHandler) Save(c *gin.Context) {
 	if err != nil {
 		log.Trace().Msg("JSON decode error")
 		log.Error().Str("Error message: ", err.Error())
-		response := response.GlobalResponse {
-			Message: utils.ErrDecode.Error(),
-			StatusCode: http.StatusBadRequest,
-			Data: nil,
-		}
-
-		c.Writer.Header().Set("Content-Type", "application/json")
-		c.Writer.Header().Set("X-Content-Type-Options", "nosniff")
-		c.Writer.WriteHeader(http.StatusBadRequest)
-		c.JSON(http.StatusBadRequest, response)
+		utils.NewResponse(utils.ErrDecode.Error(), http.StatusBadRequest, nil).Write(c.Writer)
 		return
 	}
 
@@ -193,14 +184,14 @@ func (h UserHandler) FindById(c *gin.Context) {
 
 		log.Trace().Msg("Fetch error")
 		log.Error().Str("Error message: ", errFound.Error())
-		c.Writer.WriteHeader(http.StatusBadRequest)
+		c.Writer.WriteHeader(http.StatusNotFound)
 
 		resp = response.GlobalResponse {
 			Message: errFound.Error(),
-			StatusCode: http.StatusBadRequest,
+			StatusCode: http.StatusNotFound,
 			Data: "",
 		}
-		c.JSON(http.StatusBadRequest, resp)
+		c.JSON(http.StatusNotFound, resp)
 		return
 	}
 
@@ -233,91 +224,91 @@ func (h UserHandler) GetAll(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
-func (h UserHandler) Login(c *gin.Context) {
-	var loginRequest request.Login
+// func (h UserHandler) Login(c *gin.Context) {
+// 	var loginRequest request.Login
 
-	err := c.ShouldBindJSON(&loginRequest)
+// 	err := c.ShouldBindJSON(&loginRequest)
 
-	if err != nil {
-		log.Trace().Msg("JSON decode error")
-		log.Error().Str("Error message: ", err.Error())
-		response := response.GlobalResponse {
-			Message: err.Error(),
-			StatusCode: http.StatusBadRequest,
-			Data: "",
-		}
+// 	if err != nil {
+// 		log.Trace().Msg("JSON decode error")
+// 		log.Error().Str("Error message: ", err.Error())
+// 		response := response.GlobalResponse {
+// 			Message: err.Error(),
+// 			StatusCode: http.StatusBadRequest,
+// 			Data: "",
+// 		}
 
-		c.Writer.Header().Set("Content-Type", "application/json")
-		c.Writer.Header().Set("X-Content-Type-Options", "nosniff")
-		c.Writer.WriteHeader(http.StatusBadRequest)
-		c.JSON(http.StatusBadRequest, response)
-		return
-	}
+// 		c.Writer.Header().Set("Content-Type", "application/json")
+// 		c.Writer.Header().Set("X-Content-Type-Options", "nosniff")
+// 		c.Writer.WriteHeader(http.StatusBadRequest)
+// 		c.JSON(http.StatusBadRequest, response)
+// 		return
+// 	}
 
-	foundUser, err := h.usecase.FindByUsernameLogin(loginRequest.Username)
+// 	foundUser, err := h.usecase.FindByUsernameLogin(loginRequest.Username)
 
-	if err != nil {
-		log.Trace().Msg("Found user error")
-		log.Error().Str("Error message: ", err.Error())
-		response := response.GlobalResponse {
-			Message: err.Error(),
-			StatusCode: http.StatusNotFound,
-			Data: nil,
-		}
+// 	if err != nil {
+// 		log.Trace().Msg("Found user error")
+// 		log.Error().Str("Error message: ", err.Error())
+// 		response := response.GlobalResponse {
+// 			Message: err.Error(),
+// 			StatusCode: http.StatusNotFound,
+// 			Data: nil,
+// 		}
 
-		c.Writer.Header().Set("Content-Type", "application/json")
-		c.Writer.Header().Set("X-Content-Type-Options", "nosniff")
-		c.Writer.WriteHeader(http.StatusNotFound)
-		c.JSON(http.StatusNotFound, response)
-		return
-	}
+// 		c.Writer.Header().Set("Content-Type", "application/json")
+// 		c.Writer.Header().Set("X-Content-Type-Options", "nosniff")
+// 		c.Writer.WriteHeader(http.StatusNotFound)
+// 		c.JSON(http.StatusNotFound, response)
+// 		return
+// 	}
 
-	isSame := utils.CheckPasswordHash(loginRequest.Password, foundUser.Password)
+// 	isSame := utils.CheckPasswordHash(loginRequest.Password, foundUser.Password)
 
-	if !isSame {
-		log.Trace().Msg("Password mismatch error")
-		log.Error().Str("Error message: ", errors.New("wrong password").Error())
-		response := response.GlobalResponse {
-			Message: utils.ErrWrongPass.Error(),
-			StatusCode: http.StatusUnauthorized,
-			Data: nil,
-		}
+// 	if !isSame {
+// 		log.Trace().Msg("Password mismatch error")
+// 		log.Error().Str("Error message: ", errors.New("wrong password").Error())
+// 		response := response.GlobalResponse {
+// 			Message: utils.ErrWrongPass.Error(),
+// 			StatusCode: http.StatusUnauthorized,
+// 			Data: nil,
+// 		}
 
-		c.Writer.Header().Set("Content-Type", "application/json")
-		c.Writer.Header().Set("X-Content-Type-Options", "nosniff")
-		c.Writer.WriteHeader(http.StatusUnauthorized)
-		c.JSON(http.StatusNotFound, response)
-		return
-	}
+// 		c.Writer.Header().Set("Content-Type", "application/json")
+// 		c.Writer.Header().Set("X-Content-Type-Options", "nosniff")
+// 		c.Writer.WriteHeader(http.StatusUnauthorized)
+// 		c.JSON(http.StatusNotFound, response)
+// 		return
+// 	}
 
-	tokenString, err := utils.GenerateJwtToken(foundUser)
+// 	tokenString, err := utils.GenerateJwtToken(foundUser)
 
-	if err != nil {
-		log.Trace().Msg("Error creating signature")
-		log.Error().Str("Error message: ", err.Error())
-		response := response.GlobalResponse {
-			Message: err.Error(),
-			StatusCode: http.StatusInternalServerError,
-			Data: nil,
-		}
+// 	if err != nil {
+// 		log.Trace().Msg("Error creating signature")
+// 		log.Error().Str("Error message: ", err.Error())
+// 		response := response.GlobalResponse {
+// 			Message: err.Error(),
+// 			StatusCode: http.StatusInternalServerError,
+// 			Data: nil,
+// 		}
 
-		c.Writer.Header().Set("Content-Type", "application/json")
-		c.Writer.Header().Set("X-Content-Type-Options", "nosniff")
-		c.Writer.WriteHeader(http.StatusInternalServerError)
-		c.JSON(http.StatusNotFound, response)
-		return
-	}
+// 		c.Writer.Header().Set("Content-Type", "application/json")
+// 		c.Writer.Header().Set("X-Content-Type-Options", "nosniff")
+// 		c.Writer.WriteHeader(http.StatusInternalServerError)
+// 		c.JSON(http.StatusNotFound, response)
+// 		return
+// 	}
 
-	// c.SetCookie("token", tokenString, time.Now().Add(time.Minute * 1).Second(), "", "", false, true)
-	response := response.GlobalResponse {
-		Message: "OK",
-		StatusCode: http.StatusInternalServerError,
-		Data: tokenString,
-	}
-	c.Writer.Header().Set("Content-Type", "application/json")
-	c.Writer.WriteHeader(http.StatusOK)
-	c.JSON(http.StatusOK, response)
-}
+// 	// c.SetCookie("token", tokenString, time.Now().Add(time.Minute * 1).Second(), "", "", false, true)
+// 	response := response.GlobalResponse {
+// 		Message: "OK",
+// 		StatusCode: http.StatusInternalServerError,
+// 		Data: tokenString,
+// 	}
+// 	c.Writer.Header().Set("Content-Type", "application/json")
+// 	c.Writer.WriteHeader(http.StatusOK)
+// 	c.JSON(http.StatusOK, response)
+// }
 
 func (h UserHandler) FindByUsername(c *gin.Context) {
 	log.Trace().Msg("Entering user handler find by username")

@@ -34,17 +34,11 @@ func (repo *UserRepository) initData() {
 	repo.users[1] = domain.User{
 		UserID: 1,
 		Username: "Daniel",
-		Password: "test123",
-		Balance: 1000000,
-		PackageID: 0,
 	}
 
 	repo.users[2] = domain.User{
 		UserID: 2,
 		Username: "Ahmad",
-		Password: "test123",
-		Balance: 1000000,
-		PackageID: 0,
 	}
 }
 
@@ -58,8 +52,6 @@ func (repo *UserRepository) Save(registerUser *request.Register) (response.UserR
 	user := domain.User {
 		UserID: repo.nextId,
 		Username: registerUser.Username,
-		Password: registerUser.Password,
-		Balance: registerUser.Balance,
 	}
 	repo.users[user.UserID] = user
 	log.Trace().Msg("New user saved")
@@ -68,7 +60,6 @@ func (repo *UserRepository) Save(registerUser *request.Register) (response.UserR
 	resp := response.UserResponse {
 		UserID: temp.UserID,
 		Username: temp.Username,
-		Balance: temp.Balance,
 	}
 	return resp, nil
 }
@@ -84,13 +75,11 @@ func (repo *UserRepository) FindByID(id int) (response.UserResponse, error) {
 		temp := response.UserResponse {
 			UserID: foundUser.UserID,
 			Username: foundUser.Username,
-			Balance: foundUser.Balance,
-			PackageID: foundUser.PackageID,
 		}
 		return temp, nil
 	}
 	log.Error().Msg(fmt.Sprintf("User with ID %d not found", id))
-	return response.UserResponse{}, utils.NewErrFindUserById(id)
+	return response.UserResponse{}, utils.ErrFindUser
 }
 
 func (repo *UserRepository) GetAll() ([]response.UserResponse) {
@@ -105,8 +94,6 @@ func (repo *UserRepository) GetAll() ([]response.UserResponse) {
 		temp := response.UserResponse {
 			UserID: v.UserID,
 			Username: v.Username,
-			Balance: v.Balance,
-			PackageID: v.PackageID,
 		}
 		listOfUsers = append(listOfUsers, temp)
 	}
@@ -115,50 +102,50 @@ func (repo *UserRepository) GetAll() ([]response.UserResponse) {
 	return listOfUsers
 }
 
-func (repo *UserRepository) ReduceBalance(id int, amount float64) (response.UserResponse, error) {
-	defer repo.mtx.Unlock()
+// func (repo *UserRepository) ReduceBalance(id int, amount float64) (response.UserResponse, error) {
+// 	defer repo.mtx.Unlock()
 
-	log.Trace().Msg("Inside user repository reduce balance")
-	log.Trace().Msg("Attempting to reduce user balance")
-	log.Trace().Msg("Attempting to fetch user")
-	if foundUser, exists := repo.users[id]; exists {
-		log.Trace().Msg("Fetching completed")
-		repo.mtx.Lock()
-		log.Debug().Msg(fmt.Sprintf("Balance before reduced: %f", foundUser.Balance))
-		foundUser.Balance = foundUser.Balance - amount
+// 	log.Trace().Msg("Inside user repository reduce balance")
+// 	log.Trace().Msg("Attempting to reduce user balance")
+// 	log.Trace().Msg("Attempting to fetch user")
+// 	if foundUser, exists := repo.users[id]; exists {
+// 		log.Trace().Msg("Fetching completed")
+// 		repo.mtx.Lock()
+// 		log.Debug().Msg(fmt.Sprintf("Balance before reduced: %f", foundUser.Balance))
+// 		foundUser.Balance = foundUser.Balance - amount
 
-		repo.users[foundUser.UserID] = foundUser
-		log.Debug().Msg(fmt.Sprintf("Balance after reduced: %f", foundUser.Balance))
-		log.Trace().Msg("Balance reduced successfully")
-		temp := response.UserResponse {
-			UserID: foundUser.UserID,
-			Username: foundUser.Username,
-			Balance: foundUser.Balance,
-		}
-		return temp, nil
-	} else {
-		log.Error().Msg(fmt.Sprintf("User with ID %d not found", id))
-		return response.UserResponse{}, utils.NewErrFindUserById(id)
-	}
-}
+// 		repo.users[foundUser.UserID] = foundUser
+// 		log.Debug().Msg(fmt.Sprintf("Balance after reduced: %f", foundUser.Balance))
+// 		log.Trace().Msg("Balance reduced successfully")
+// 		temp := response.UserResponse {
+// 			UserID: foundUser.UserID,
+// 			Username: foundUser.Username,
+// 			Balance: foundUser.Balance,
+// 		}
+// 		return temp, nil
+// 	} else {
+// 		log.Error().Msg(fmt.Sprintf("User with ID %d not found", id))
+// 		return response.UserResponse{}, utils.NewErrFindUserById(id)
+// 	}
+// }
 
-func (repo *UserRepository) FindByUsernameLogin(username string) (response.LoginResponse, error) {
-	repo.mtx.Lock()
-	defer repo.mtx.Unlock()
+// func (repo *UserRepository) FindByUsernameLogin(username string) (response.LoginResponse, error) {
+// 	repo.mtx.Lock()
+// 	defer repo.mtx.Unlock()
 
-	log.Trace().Msg("Inside user repository find by username")
-	for _, v := range repo.users {
-		if v.Username == username {
-			temp := response.LoginResponse {
-				UserID: v.UserID,
-				Username: v.Username,
-				Password: v.Password,
-			}
-			return temp, nil
-		}
-	}
-	return response.LoginResponse{}, utils.NewErrFindByUsername(username)
-}
+// 	log.Trace().Msg("Inside user repository find by username")
+// 	for _, v := range repo.users {
+// 		if v.Username == username {
+// 			temp := response.LoginResponse {
+// 				UserID: v.UserID,
+// 				Username: v.Username,
+// 				Password: v.Password,
+// 			}
+// 			return temp, nil
+// 		}
+// 	}
+// 	return response.LoginResponse{}, utils.NewErrFindByUsername(username)
+// }
 
 func (repo *UserRepository) FindByUsername(username string) (response.UserResponse, error) {
 	repo.mtx.Lock()
@@ -170,32 +157,30 @@ func (repo *UserRepository) FindByUsername(username string) (response.UserRespon
 			temp := response.UserResponse {
 				UserID: v.UserID,
 				Username: v.Username,
-				Balance: v.Balance,
-				PackageID: v.PackageID,
 			}
 			return temp, nil
 		}
 	}
-	return response.UserResponse{}, utils.NewErrFindByUsername(username)
+	return response.UserResponse{}, utils.ErrFindUser
 }
 
-func (repo *UserRepository) SetPackage(userID int, packageID int) (response.UserResponse, error) {
-	repo.mtx.Lock()
-	defer repo.mtx.Unlock()
+// func (repo *UserRepository) SetPackage(userID int, packageID int) (response.UserResponse, error) {
+// 	repo.mtx.Lock()
+// 	defer repo.mtx.Unlock()
 
-	log.Trace().Msg("Inside user repository set package")
-	if foundUser, exists := repo.users[userID]; exists {
-		log.Trace().Msg("Fetching completed")
-		foundUser.PackageID = packageID
-		repo.users[userID] = foundUser
+// 	log.Trace().Msg("Inside user repository set package")
+// 	if foundUser, exists := repo.users[userID]; exists {
+// 		log.Trace().Msg("Fetching completed")
+// 		foundUser.PackageID = packageID
+// 		repo.users[userID] = foundUser
 
-		temp := response.UserResponse {
-			UserID: foundUser.UserID,
-			Username: foundUser.Username,
-			Balance: foundUser.Balance,
-			PackageID: foundUser.PackageID,
-		}
-		return temp, nil
-	}
-	return response.UserResponse{}, utils.NewErrFindUserById(userID)
-}
+// 		temp := response.UserResponse {
+// 			UserID: foundUser.UserID,
+// 			Username: foundUser.Username,
+// 			Balance: foundUser.Balance,
+// 			PackageID: foundUser.PackageID,
+// 		}
+// 		return temp, nil
+// 	}
+// 	return response.UserResponse{}, utils.NewErrFindUserById(userID)
+// }

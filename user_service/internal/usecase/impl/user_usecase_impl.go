@@ -43,22 +43,22 @@ func (uc UserUseCase) GetAll() ([]response.UserResponse) {
 	return uc.repo.GetAll()
 }
 
-func (uc UserUseCase) ReduceBalance(id int, amount float64) (response.UserResponse, error) {
-	log.Trace().Msg("Entering user usecase reduce balance")
-	return uc.repo.ReduceBalance(id, amount)
-}
+// func (uc UserUseCase) ReduceBalance(id int, amount float64) (response.UserResponse, error) {
+// 	log.Trace().Msg("Entering user usecase reduce balance")
+// 	return uc.repo.ReduceBalance(id, amount)
+// }
 
-func (uc UserUseCase) FindByUsernameLogin(username string) (response.LoginResponse, error) {
-	log.Trace().Msg("Enter user usecase FindByUsernameLogin")
-	return uc.repo.FindByUsernameLogin(username)
-}
+// func (uc UserUseCase) FindByUsernameLogin(username string) (response.LoginResponse, error) {
+// 	log.Trace().Msg("Enter user usecase FindByUsernameLogin")
+// 	return uc.repo.FindByUsernameLogin(username)
+// }
 
 func (uc UserUseCase) FindByUsername(username string) (response.UserResponse, error) {
 	log.Trace().Msg("Enter user usecase FindByUsername")
 	return uc.repo.FindByUsername(username)
 }
 
-func (uc UserUseCase) SetPackage(userID int, packageID int) (response.UserResponse, error) {
-	log.Trace().Msg("Enter user use case SetPackage")
-	return uc.repo.SetPackage(userID, packageID)
-}
+// func (uc UserUseCase) SetPackage(userID int, packageID int) (response.UserResponse, error) {
+// 	log.Trace().Msg("Enter user use case SetPackage")
+// 	return uc.repo.SetPackage(userID, packageID)
+// }
