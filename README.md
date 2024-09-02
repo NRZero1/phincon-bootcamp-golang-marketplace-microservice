@@ -102,6 +102,33 @@ VALUES
 ('donation', 'user-dest', 'balance-dest', 'ADD BALANCE', 'SUCCESS'),
 ('donation', 'user-source', 'balance-source', 'ADD BALANCE', 'FAILED'),
 ```
+5. For transaction and transaction detail table, copy and paste this sql create table script below:
+```sql
+CREATE TABLE transaction (
+	id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+	transaction_id VARCHAR(255) NOT NULL,
+	order_type VARCHAR(255) NOT NULL,
+	user_id INTEGER NOT NULL,
+	status VARCHAR(255) NOT NULL,
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	updated_at TIMESTAMP DEFAULT CURRENT_IIMESTAMP
+);
+
+CREATE TABLE transaction_detail (
+	id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+	transaction_id VARCHAR(255) NOT NULL,
+	order_type VARCHAR(255) NOT NULL,
+	user_id INTEGER NOT NULL,
+	topic VARCHAR(255) NOT NULL,
+	action VARCHAR(255) NOT NULL,
+	service VARCHAR(255) NOT NULL,
+	status VARCHAR(255) NOT NULL,
+	status_code INTEGER,
+	message VARCHAR(255),
+	payload JSONB,
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
 5. I have set the kafka to create topic if not exist so you can just run all the service using Makefile or run it individually
 > [!WARNING]
-> Using Makefile to run all the service can sometimes make service that can consume message error since they need zookeeper and kafka running first before the kafka client can run correctly
+> Using Makefile to run all the service can sometimes make service that can consume message error since they need zookeeper and kafka running first before the kafka client can run correctly. So for caution either edit the make file to not include zookeeper and kafka server or run all the service including zookeeper and kafka server manually
